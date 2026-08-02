@@ -47,3 +47,21 @@ def load_market_cap(prices: pd.DataFrame, fundamentals_path: str = "Data/fundame
         .sort_values(["date", "symbol"])
         .reset_index(drop=True)
     )
+
+
+def load_sectors(prices: pd.DataFrame, securities_path: str = "Data/securities.csv") -> pd.DataFrame:
+    """Tidy (date, symbol, sector) frame: each symbol's GICS Sector broadcast across every date in prices.
+
+    prices: a (date, symbol, ...) frame, e.g. from load_prices(), supplying the dates to broadcast across.
+    Symbols with no entry in securities.csv are dropped.
+    """
+    securities = pd.read_csv(securities_path)
+    sectors = securities[["Ticker symbol", "GICS Sector"]].rename(
+        columns={"Ticker symbol": "symbol", "GICS Sector": "sector"}
+    )
+    return (
+        prices[["date", "symbol"]]
+        .merge(sectors, on="symbol", how="inner")
+        .sort_values(["date", "symbol"])
+        .reset_index(drop=True)
+    )

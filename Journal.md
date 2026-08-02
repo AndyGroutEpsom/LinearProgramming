@@ -34,3 +34,14 @@ Pivoted from just exploring the Kaggle data to actually building out a basic ind
 - `plot.py` - shared plotting helpers for the notebook.
 
 Still using naive schemes throughout (equal weighting, top-N by a single field) - next big step is swapping the weighting side out for the actual optimised weight logic (the LP-based one from the June 7 goals: max return subject to turnover/sector/sum-to-100/no-shorting constraints). Everything above is really just scaffolding so that once the optimiser exists, I can backtest it properly.
+
+## August 2, 2026
+Filling in a bit more analytics before I start comparing weighting schemes (naive vs. optimised) properly - want the same lens applied to each.
+- `securities.csv` has GICS Sector/Sub Industry per ticker. Added `load_sectors()` to
+  `csv_provider.py` and folded it into the combined instrument frame (renamed
+  `price_and_market_cap` -> `instrument_data` now that it's more than just those two fields).
+- `index_utils.py`: `sector_weights()` rolls the daily symbol weight matrix up to a
+  date x sector matrix; `largest_sector_weight()` and `effective_sector_count()` (inverse
+  HHI - reads as "diversified across N equally-sized sectors") both build on it. Plotted
+  effective sector count for the top-100 market-cap index - sits around 8-9 out of 11 sectors.
+- Started a scratch `hhi.ipynb` just to get a feel for HHI mechanics separately.

@@ -33,3 +33,29 @@ def turnover(weights: pd.DataFrame, rebalance_dates: Sequence[date]) -> pd.Serie
     return pd.Series(turnovers, name="turnover")
 
 
+def sector_weights(weights: pd.DataFrame, sector_by_symbol: pd.Series) -> pd.DataFrame:
+    """Roll a date x symbol weight matrix up to a date x sector matrix.
+
+    sector_by_symbol: symbol -> GICS Sector lookup, e.g.
+        instrument_data.drop_duplicates("symbol").set_index("symbol")["sector"].
+    """
+    return weights.T.groupby(sector_by_symbol).sum().T
+
+
+def effective_sector_count(weights: pd.DataFrame, sector_by_symbol: pd.Series) -> pd.Series:
+    """Effective number of sectors held, from the inverse Herfindahl-Hirschman Index of sector weights.
+
+    A single number capturing diversification across the whole sector mix, not just the largest
+    sector: 1.0 means the portfolio is concentrated in one sector; it equals the plain count of
+    sectors held when they're equally weighted; a skewed mix scores lower than its raw sector count.
+    Higher is more diversified - compare against the number of GICS sectors available (11) for scale.
+    """
+    hhi = sector_weights(weights, sector_by_symbol).pow(2).sum(axis=1)
+    return (1 / hhi).rename("effective_sector_count")
+
+
+def largest_sector_weight(weights: pd.DataFrame, sector_by_symbol: pd.Series) -> pd.Series:
+    """Weight of the single largest sector, per date."""
+    return sector_weights(weights, sector_by_symbol).max(axis=1).rename("largest_sector_weight")
+
+
